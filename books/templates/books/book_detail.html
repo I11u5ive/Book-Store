@@ -1,0 +1,72 @@
+{% extends "books/base.html" %}
+
+
+{% block title %}
+    {{ book.title }}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="card">
+
+    <div class="card-body">
+
+        <h1>
+            {{ book.title }}
+        </h1>
+
+        <h5 class="text-muted">
+            {{ book.author }}
+        </h5>
+
+        <hr>
+
+        <p>
+            {{ book.description }}
+        </p>
+
+        <p>
+            <strong>Category:</strong>
+            {{ book.category.name }}
+        </p>
+
+        <p>
+            <strong>Price:</strong>
+            ${{ book.price }}
+        </p>
+
+        <p>
+            <strong>In stock:</strong>
+            {{ book.stock }}
+        </p>
+
+
+        <a
+            href="{% url 'books:update' book.pk %}"
+            class="btn btn-warning"
+        >
+            Edit
+        </a>
+
+
+        <a
+            href="{% url 'books:delete' book.pk %}"
+            class="btn btn-danger"
+        >
+            Delete
+        </a>
+
+
+        <a
+            href="{% url 'books:list' %}"
+            class="btn btn-secondary"
+        >
+            Back to Books
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

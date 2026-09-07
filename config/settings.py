@@ -43,8 +43,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "books",
     "users",
+    "shop_orders",
     "debug_toolbar",
 ]
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+STRIPE_CURRENCY = os.getenv("STRIPE_CURRENCY", "uah")
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "bookstore@example.com",
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

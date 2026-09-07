@@ -8,11 +8,15 @@ urlpatterns = [
 
     path(
         "books/",
-        include("books.urls")
+        include("books.urls"),
     ),
 
     path(
         "accounts/",
-        include("users.urls")
+        include("users.urls"),
+    ),
+    path(
+        "cart/",
+        include("shop_orders.urls"),
     ),
 ] + debug_toolbar_urls()

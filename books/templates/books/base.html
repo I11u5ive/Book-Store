@@ -53,6 +53,13 @@
                     Hello, {{ user.username }}!
                 </span>
 
+                <a
+                        class="btn btn-outline-light me-2"
+                        href="{% url 'shop_orders:cart_detail' %}"
+                >
+                    Cart
+                </a>
+
             <form
                 method="post"
                 action="{% url 'users:logout' %}"

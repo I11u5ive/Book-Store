@@ -1,0 +1,111 @@
+# Ukrainian translations for BookStore.
+msgid ""
+msgstr ""
+"Project-Id-Version: BookStore\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: books/models.py
+msgid "Name"
+msgstr "Назва"
+
+#: books/models.py
+msgid "Slug"
+msgstr "Slug"
+
+#: books/models.py
+msgid "Category"
+msgstr "Категорія"
+
+#: books/models.py
+msgid "Categories"
+msgstr "Категорії"
+
+#: books/models.py
+msgid "Title"
+msgstr "Назва"
+
+#: books/models.py
+msgid "Author"
+msgstr "Автор"
+
+#: books/models.py
+msgid "Price"
+msgstr "Ціна"
+
+#: books/models.py
+msgid "Description"
+msgstr "Опис"
+
+#: books/models.py
+msgid "Stock"
+msgstr "Кількість на складі"
+
+#: books/models.py
+msgid "Book"
+msgstr "Книга"
+
+#: books/models.py
+msgid "Books"
+msgstr "Книги"
+
+#: shop_orders/models.py
+msgid "Created"
+msgstr "Створено"
+
+#: shop_orders/models.py
+msgid "Paid"
+msgstr "Оплачено"
+
+#: shop_orders/models.py
+msgid "Cancelled"
+msgstr "Скасовано"
+
+#: shop_orders/models.py
+msgid "User"
+msgstr "Користувач"
+
+#: shop_orders/models.py
+msgid "Created at"
+msgstr "Створено"
+
+#: shop_orders/models.py
+msgid "Status"
+msgstr "Статус"
+
+#: shop_orders/models.py
+msgid "Total amount"
+msgstr "Загальна сума"
+
+#: shop_orders/models.py
+msgid "Stripe session ID"
+msgstr "ID сесії Stripe"
+
+#: shop_orders/models.py
+msgid "Order"
+msgstr "Замовлення"
+
+#: shop_orders/models.py
+msgid "Orders"
+msgstr "Замовлення"
+
+#: shop_orders/models.py
+msgid "Quantity"
+msgstr "Кількість"
+
+#: shop_orders/models.py
+msgid "Order item"
+msgstr "Позиція замовлення"
+
+#: shop_orders/models.py
+msgid "Order items"
+msgstr "Позиції замовлення"
+
+msgid "Order confirmation"
+msgstr "Підтвердження замовлення"
+
+msgid "Your order #%(order_id)s has been created."
+msgstr "Ваше замовлення №%(order_id)s створено."

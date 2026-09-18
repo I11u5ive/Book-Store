@@ -1,52 +1,173 @@
 {% extends "books/base.html" %}
-
+{% load i18n %}
 
 {% block title %}
-
-    {% if object %}
-        Edit Book
-    {% else %}
-        Add Book
-    {% endif %}
-
+    {% trans "Books" %}
 {% endblock %}
-
 
 {% block content %}
 
-<h1 class="mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-    {% if object %}
-        Edit Book
-    {% else %}
-        Add Book
+    <h1>
+        {% trans "Books" %}
+    </h1>
+
+    {% if perms.books.add_book %}
+        <a
+            href="{% url 'books:create' %}"
+            class="btn btn-success"
+        >
+            {% trans "Add book" %}
+        </a>
     {% endif %}
 
-</h1>
+</div>
 
 
-<form method="post">
+<form
+    method="get"
+    class="mb-4"
+>
+    <div class="input-group">
 
-    {% csrf_token %}
+        <input
+            type="text"
+            name="search"
+            value="{{ request.GET.search }}"
+            class="form-control"
+            placeholder="{% trans 'Search by title or author' %}"
+        >
 
-    {{ form.as_p }}
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            {% trans "Search" %}
+        </button>
 
-
-    <button
-        type="submit"
-        class="btn btn-success"
-    >
-        Save
-    </button>
-
-
-    <a
-        href="{% url 'books:list' %}"
-        class="btn btn-secondary"
-    >
-        Cancel
-    </a>
-
+    </div>
 </form>
+
+
+<div class="row">
+
+    {% for book in books %}
+
+        <div class="col-md-4 mb-4">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        {{ book.title }}
+                    </h5>
+
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        {{ book.author }}
+                    </h6>
+
+                    <p>
+                        <strong>
+                            {% trans "Category" %}:
+                        </strong>
+
+                        {{ book.category.name }}
+                    </p>
+
+                    <p>
+                        <strong>
+                            {% trans "Price" %}:
+                        </strong>
+
+                        ${{ book.price }}
+                    </p>
+
+                    <p>
+                        <strong>
+                            {% trans "In stock" %}:
+                        </strong>
+
+                        {{ book.stock }}
+                    </p>
+
+                    <a
+                        href="{% url 'books:detail' book.pk %}"
+                        class="btn btn-primary"
+                    >
+                        {% trans "View details" %}
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <div class="alert alert-info">
+            {% trans "No books found." %}
+        </div>
+
+    {% endfor %}
+
+</div>
+
+
+{% if is_paginated %}
+
+<nav>
+
+    <ul class="pagination">
+
+        {% if page_obj.has_previous %}
+
+            <li class="page-item">
+
+                <a
+                    class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                >
+                    {% trans "Previous" %}
+                </a>
+
+            </li>
+
+        {% endif %}
+
+
+        <li class="page-item active">
+
+            <span class="page-link">
+                {% blocktrans with page=page_obj.number pages=page_obj.paginator.num_pages %}
+                    Page {{ page }} of {{ pages }}
+                {% endblocktrans %}
+            </span>
+
+        </li>
+
+
+        {% if page_obj.has_next %}
+
+            <li class="page-item">
+
+                <a
+                    class="page-link"
+                    href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                >
+                    {% trans "Next" %}
+                </a>
+
+            </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
+
+{% endif %}
 
 {% endblock %}

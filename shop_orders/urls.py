@@ -14,6 +14,24 @@ urlpatterns = [
     ),
 
     path(
+        "",
+        views.cart_detail,
+        name="cart",
+    ),
+
+    path(
+        "add/<int:book_id>/",
+        views.cart_add,
+        name="cart_add",
+    ),
+
+    path(
+        "",
+        views.cart_detail,
+        name="cart_detail",
+    ),
+
+    path(
         "add/<int:book_id>/",
         views.cart_add,
         name="cart_add",

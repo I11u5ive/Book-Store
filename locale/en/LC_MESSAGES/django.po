@@ -1,0 +1,120 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-18 11:54+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: books/models.py:8
+msgid "Name"
+msgstr ""
+
+#: books/models.py:12
+msgid "Slug"
+msgstr ""
+
+#: books/models.py:17 books/models.py:54
+msgid "Category"
+msgstr ""
+
+#: books/models.py:18
+msgid "Categories"
+msgstr ""
+
+#: books/models.py:26
+msgid "Title"
+msgstr ""
+
+#: books/models.py:31
+msgid "Author"
+msgstr ""
+
+#: books/models.py:36 shop_orders/models.py:81
+msgid "Price"
+msgstr ""
+
+#: books/models.py:42
+msgid "Description"
+msgstr ""
+
+#: books/models.py:46
+msgid "Stock"
+msgstr ""
+
+#: books/models.py:58 shop_orders/models.py:75
+msgid "Book"
+msgstr ""
+
+#: books/models.py:59
+msgid "Books"
+msgstr ""
+
+#: shop_orders/models.py:16
+msgid "Created"
+msgstr ""
+
+#: shop_orders/models.py:17
+msgid "Paid"
+msgstr ""
+
+#: shop_orders/models.py:18
+msgid "Cancelled"
+msgstr ""
+
+#: shop_orders/models.py:25
+msgid "User"
+msgstr ""
+
+#: shop_orders/models.py:30
+msgid "Created at"
+msgstr ""
+
+#: shop_orders/models.py:37
+msgid "Status"
+msgstr ""
+
+#: shop_orders/models.py:44
+msgid "Total amount"
+msgstr ""
+
+#: shop_orders/models.py:52
+msgid "Stripe session ID"
+msgstr ""
+
+#: shop_orders/models.py:56 shop_orders/models.py:68
+msgid "Order"
+msgstr ""
+
+#: shop_orders/models.py:57
+msgid "Orders"
+msgstr ""
+
+#: shop_orders/models.py:86
+msgid "Quantity"
+msgstr ""
+
+#: shop_orders/models.py:90
+msgid "Order item"
+msgstr ""
+
+#: shop_orders/models.py:91
+msgid "Order items"
+msgstr ""
+
+msgid "Order confirmation"
+msgstr "Order confirmation"
+
+msgid "Your order #%(order_id)s has been created."
+msgstr "Your order #%(order_id)s has been created."

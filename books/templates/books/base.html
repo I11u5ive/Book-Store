@@ -1,10 +1,10 @@
+{% load static %}
+{% load i18n %}
+
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
-
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1"
@@ -12,7 +12,7 @@
 
     <title>
         {% block title %}
-            Book Store
+            {% trans "BookStore" %}
         {% endblock %}
     </title>
 
@@ -21,59 +21,55 @@
         rel="stylesheet"
     >
 
-    {% load static %}
-
     <link
         rel="stylesheet"
-        href="{% static 'books/style.css' %}"
+        href="{% static 'css/style.css' %}"
     >
-
 </head>
-
 
 <body>
 
-<nav class="navbar navbar-dark bg-dark navbar-expand-lg">
-
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
 
         <a
             class="navbar-brand"
             href="{% url 'books:list' %}"
         >
-            BookStore
+            {% trans "BookStore" %}
         </a>
 
-
-        <div>
+        <div class="d-flex align-items-center">
 
             {% if user.is_authenticated %}
 
                 <span class="text-white me-3">
-                    Hello, {{ user.username }}!
+                    {% blocktrans with username=user.username %}
+                        Hello, {{ username }}!
+                    {% endblocktrans %}
                 </span>
 
                 <a
-                        class="btn btn-outline-light me-2"
-                        href="{% url 'shop_orders:cart_detail' %}"
+                    class="btn btn-outline-light me-2"
+                    href="{% url 'shop_orders:cart' %}"
                 >
-                    Cart
+                    {% trans "Cart" %}
                 </a>
 
-            <form
-                method="post"
-                action="{% url 'users:logout' %}"
-                class="d-inline"
-            >
-                {% csrf_token %}
-
-                <button
-                    type="submit"
-                    class="btn btn-outline-light"
+                <form
+                    method="post"
+                    action="{% url 'users:logout' %}"
+                    class="d-inline me-2"
                 >
-                    Logout
-                </button>
-            </form>
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-outline-light"
+                    >
+                        {% trans "Logout" %}
+                    </button>
+                </form>
 
             {% else %}
 
@@ -81,32 +77,77 @@
                     class="btn btn-outline-light me-2"
                     href="{% url 'users:login' %}"
                 >
-                    Login
+                    {% trans "Login" %}
                 </a>
 
                 <a
-                    class="btn btn-light"
+                    class="btn btn-light me-2"
                     href="{% url 'users:register' %}"
                 >
-                    Register
+                    {% trans "Register" %}
                 </a>
 
             {% endif %}
 
+            <form
+                action="{% url 'set_language' %}"
+                method="post"
+                class="d-inline"
+            >
+                {% csrf_token %}
+
+                {% get_current_language as CURRENT_LANGUAGE %}
+
+                <select
+                    name="language"
+                    onchange="this.form.submit()"
+                    class="form-select"
+                >
+                    <option
+                        value="en"
+                        {% if CURRENT_LANGUAGE == "en" %}
+                            selected
+                        {% endif %}
+                    >
+                        English
+                    </option>
+
+                    <option
+                        value="uk"
+                        {% if CURRENT_LANGUAGE == "uk" %}
+                            selected
+                        {% endif %}
+                    >
+                        Українська
+                    </option>
+                </select>
+
+                <input
+                    type="hidden"
+                    name="next"
+                    value="{{ request.path }}"
+                >
+            </form>
+
         </div>
-
     </div>
-
 </nav>
 
+
 <main class="container mt-4">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
     {% block content %}
     {% endblock %}
 
 </main>
 
-
 </body>
-
 </html>

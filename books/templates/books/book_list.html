@@ -1,39 +1,52 @@
 {% extends "books/base.html" %}
-
+{% load i18n %}
 
 {% block title %}
-    Books
+    {% trans "Books" %}
 {% endblock %}
-
 
 {% block content %}
 
-<h1 class="mb-4">
-    Books
-</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h1>
+        {% trans "Books" %}
+    </h1>
+
+    {% if perms.books.add_book %}
+        <a
+            href="{% url 'books:create' %}"
+            class="btn btn-success"
+        >
+            {% trans "Add book" %}
+        </a>
+    {% endif %}
+
+</div>
 
 
-<form method="get" class="mb-4">
-
+<form
+    method="get"
+    class="mb-4"
+>
     <div class="input-group">
 
         <input
             type="text"
             name="search"
+            value="{{ request.GET.search }}"
             class="form-control"
-            placeholder="Search by title or author..."
-            value="{{ request.GET.search|default:'' }}"
+            placeholder="{% trans 'Search by title or author' %}"
         >
 
         <button
-            class="btn btn-primary"
             type="submit"
+            class="btn btn-primary"
         >
-            Search
+            {% trans "Search" %}
         </button>
 
     </div>
-
 </form>
 
 
@@ -51,28 +64,39 @@
                         {{ book.title }}
                     </h5>
 
-                    <p class="card-text">
-                        Author: {{ book.author }}
-                    </p>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        {{ book.author }}
+                    </h6>
 
                     <p>
-                        Category:
+                        <strong>
+                            {% trans "Category" %}:
+                        </strong>
+
                         {{ book.category.name }}
                     </p>
 
-                    <p class="fw-bold">
+                    <p>
+                        <strong>
+                            {% trans "Price" %}:
+                        </strong>
+
                         ${{ book.price }}
                     </p>
 
                     <p>
-                        In stock: {{ book.stock }}
+                        <strong>
+                            {% trans "In stock" %}:
+                        </strong>
+
+                        {{ book.stock }}
                     </p>
 
                     <a
                         href="{% url 'books:detail' book.pk %}"
                         class="btn btn-primary"
                     >
-                        Details
+                        {% trans "View details" %}
                     </a>
 
                 </div>
@@ -83,9 +107,9 @@
 
     {% empty %}
 
-        <p>
-            No books found.
-        </p>
+        <div class="alert alert-info">
+            {% trans "No books found." %}
+        </div>
 
     {% endfor %}
 
@@ -106,7 +130,7 @@
                     class="page-link"
                     href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                 >
-                    Previous
+                    {% trans "Previous" %}
                 </a>
 
             </li>
@@ -117,7 +141,9 @@
         <li class="page-item active">
 
             <span class="page-link">
-                {{ page_obj.number }}
+                {% blocktrans with page=page_obj.number pages=page_obj.paginator.num_pages %}
+                    Page {{ page }} of {{ pages }}
+                {% endblocktrans %}
             </span>
 
         </li>
@@ -131,7 +157,7 @@
                     class="page-link"
                     href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                 >
-                    Next
+                    {% trans "Next" %}
                 </a>
 
             </li>
@@ -143,6 +169,5 @@
 </nav>
 
 {% endif %}
-
 
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 from debug_toolbar.toolbar import debug_toolbar_urls
+from django.conf.urls.i18n import i18n_patterns
 
 
 urlpatterns = [
@@ -10,7 +11,6 @@ urlpatterns = [
         "books/",
         include("books.urls"),
     ),
-
     path(
         "accounts/",
         include("users.urls"),
@@ -19,4 +19,6 @@ urlpatterns = [
         "cart/",
         include("shop_orders.urls"),
     ),
+    path("i18n/",
+         include("django.conf.urls.i18n")),
 ] + debug_toolbar_urls()

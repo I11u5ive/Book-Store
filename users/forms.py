@@ -1,10 +1,11 @@
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.utils.translation import gettext_lazy as _
 
 from .models import User
 
 
 class UserRegisterForm(UserCreationForm):
-
     class Meta:
         model = User
 
@@ -14,3 +15,21 @@ class UserRegisterForm(UserCreationForm):
             "password1",
             "password2",
         )
+
+        labels = {
+            "username": _("Username"),
+            "email": _("Email"),
+            "password1": _("Password"),
+            "password2": _("Password confirmation"),
+        }
+
+        help_texts = {
+            "username": _("Required. 150 characters or fewer."),
+            "email": _("Enter your email address."),
+        }
+
+        error_messages = {
+            "username": {
+                "unique": _("A user with that username already exists."),
+            },
+        }

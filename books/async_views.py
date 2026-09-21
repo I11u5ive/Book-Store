@@ -5,16 +5,13 @@ from .models import Book
 
 
 async def async_book_count(request):
+    """Return the total number of books as JSON."""
     count = await Book.objects.acount()
-
-    return JsonResponse(
-        {
-            "count": count,
-        }
-    )
+    return JsonResponse({"count": count})
 
 
 async def async_book_list(request):
+    """Return all books as a JSON list ordered by title."""
     books = []
 
     async for book in Book.objects.all().order_by("title"):
@@ -28,18 +25,12 @@ async def async_book_list(request):
             }
         )
 
-    return JsonResponse(
-        {
-            "books": books,
-        }
-    )
+    return JsonResponse({"books": books})
 
 
 async def async_book_search(request):
-    search = request.GET.get(
-        "search",
-        "",
-    ).strip()
+    """Return books matching the optional title or author search."""
+    search = request.GET.get("search", "").strip()
 
     queryset = Book.objects.all()
 

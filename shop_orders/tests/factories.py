@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import factory
 
 from books.tests.factories import BookFactory
@@ -21,7 +23,7 @@ class OrderFactory(
 
     status = Order.STATUS_CREATED
 
-    total_amount = "100.00"
+    total_amount = Decimal("100.00")
 
 
 class OrderItemFactory(

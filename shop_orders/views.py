@@ -24,6 +24,8 @@ from .models import Order, OrderItem
 
 @login_required
 def cart_detail(request):
+    """Display the current user's shopping cart."""
+
     cart = Cart(request)
 
     return render(
@@ -38,6 +40,8 @@ def cart_detail(request):
 @login_required
 @require_POST
 def cart_add(request, book_id):
+    """Add the requested quantity of a book to the shopping cart."""
+
     book = get_object_or_404(
         Book,
         id=book_id,
@@ -90,6 +94,8 @@ def cart_add(request, book_id):
 @login_required
 @require_POST
 def cart_update(request, book_id):
+    """Update or remove a book quantity in the shopping cart."""
+
     book = get_object_or_404(
         Book,
         id=book_id,
@@ -133,6 +139,8 @@ def cart_update(request, book_id):
 @login_required
 @require_POST
 def cart_remove(request, book_id):
+    """Remove a book from the shopping cart."""
+
     book = get_object_or_404(
         Book,
         id=book_id,
@@ -150,6 +158,8 @@ def cart_remove(request, book_id):
 @login_required
 @require_POST
 def cart_clear(request):
+    """Remove all books from the shopping cart."""
+
     cart = Cart(request)
 
     cart.clear()
@@ -160,6 +170,8 @@ def cart_clear(request):
 
 
 def send_order_email(order_id):
+    """Send an order confirmation email to the customer."""
+
     order = Order.objects.get(
         id=order_id,
     )
@@ -201,6 +213,7 @@ def send_order_email(order_id):
 @login_required
 @require_POST
 def checkout(request):
+    """Create an order and Stripe Checkout session from the current cart."""
 
     cart = Cart(request)
 
@@ -216,9 +229,6 @@ def checkout(request):
             "shop_orders:cart_detail"
         )
 
-    #
-    # 1. Создаём Order и OrderItem атомарно.
-    #
     with transaction.atomic():
 
         order = Order.objects.create(
@@ -283,18 +293,11 @@ def checkout(request):
             ]
         )
 
-        #
-        # Email будет отправлен
-        # только после успешного COMMIT.
-        #
         transaction.on_commit(
             lambda order_id=order.id:
             send_order_email(order_id)
         )
 
-    #
-    # 2. Создаём Stripe Checkout Session.
-    #
     client = stripe.StripeClient(
         settings.STRIPE_SECRET_KEY
     )
@@ -370,6 +373,7 @@ def checkout(request):
 
 @login_required
 def checkout_success(request):
+    """Display the successful checkout page and related order."""
 
     session_id = request.GET.get(
         "session_id"
@@ -394,6 +398,7 @@ def checkout_success(request):
 
 @login_required
 def checkout_cancel(request):
+    """Display the checkout cancellation page."""
 
     return render(
         request,

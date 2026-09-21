@@ -26,6 +26,8 @@ class BookListView(
     PermissionRequiredMixin,
     ListView,
 ):
+    """Display a paginated list of books with optional title/author search."""
+
     model = Book
     template_name = "books/book_list.html"
     context_object_name = "books"
@@ -33,6 +35,7 @@ class BookListView(
     permission_required = "books.view_book"
 
     def get_queryset(self):
+        """Return books with related categories and optional search filtering."""
         queryset = Book.objects.select_related("category")
 
         search = self.request.GET.get("search", "").strip()
@@ -57,12 +60,15 @@ class BookDetailView(
     PermissionRequiredMixin,
     DetailView,
 ):
+    """Display detailed information about a single book."""
+
     model = Book
     template_name = "books/book_detail.html"
     context_object_name = "book"
     permission_required = "books.view_book"
 
     def get_queryset(self):
+        """Return books with their related category loaded efficiently."""
         return Book.objects.select_related("category")
 
 
@@ -71,6 +77,8 @@ class BookCreateView(
     PermissionRequiredMixin,
     CreateView,
 ):
+    """Create a new book when the user has the required permission."""
+
     model = Book
     form_class = BookForm
     template_name = "books/book_form.html"
@@ -83,6 +91,8 @@ class BookUpdateView(
     PermissionRequiredMixin,
     UpdateView,
 ):
+    """Update an existing book when the user has the required permission."""
+
     model = Book
     form_class = BookForm
     template_name = "books/book_form.html"
@@ -95,6 +105,8 @@ class BookDeleteView(
     PermissionRequiredMixin,
     DeleteView,
 ):
+    """Delete an existing book when the user has the required permission."""
+
     model = Book
     template_name = "books/book_confirm_delete.html"
     success_url = reverse_lazy("books:list")

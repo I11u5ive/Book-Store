@@ -55,4 +55,4 @@ def test_register_form_missing_email():
         }
     )
 
-    assert form.is_valid()
+    assert not form.is_valid()

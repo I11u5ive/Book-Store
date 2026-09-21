@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import factory
 
 from books.models import Book, Category
@@ -32,7 +34,7 @@ class BookFactory(
         lambda n: f"Author {n}"
     )
 
-    price = "100.00"
+    price = Decimal("100.00")
 
     description = factory.Faker(
         "paragraph"

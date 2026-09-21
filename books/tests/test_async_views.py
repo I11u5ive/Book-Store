@@ -1,14 +1,15 @@
 import pytest
 
+from asgiref.sync import sync_to_async
 from django.urls import reverse
 
 from books.tests.factories import BookFactory
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_async_book_count(async_client):
-    BookFactory.create_batch(5)
+    await sync_to_async(BookFactory.create_batch)(5)
 
     response = await async_client.get(
         reverse("books:async_count")
@@ -21,10 +22,10 @@ async def test_async_book_count(async_client):
     assert data["count"] == 5
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_async_book_list(async_client):
-    BookFactory(
+    await sync_to_async(BookFactory)(
         title="The Hobbit"
     )
 
@@ -43,14 +44,14 @@ async def test_async_book_list(async_client):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_async_book_search(async_client):
-    BookFactory(
+    await sync_to_async(BookFactory)(
         title="The Hobbit"
     )
 
-    BookFactory(
+    await sync_to_async(BookFactory)(
         title="The Last Algorithm"
     )
 

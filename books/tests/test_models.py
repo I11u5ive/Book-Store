@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 import pytest
+from django.db import IntegrityError
 
 from books.models import Book, Category
 
@@ -35,6 +38,19 @@ def test_category_slug():
     assert category.slug == "science-fiction"
 
 
+# Generated with AI, reviewed and modified
+@pytest.mark.django_db
+def test_category_slug_must_be_unique():
+    CategoryFactory(
+        slug="fantasy"
+    )
+
+    with pytest.raises(IntegrityError):
+        CategoryFactory(
+            slug="fantasy"
+        )
+
+
 @pytest.mark.django_db
 def test_book_str():
     book = BookFactory(
@@ -59,7 +75,9 @@ def test_book_price():
         price="150.00"
     )
 
-    assert book.price == 150
+    assert book.price == Decimal(
+        "150.00"
+    )
 
 
 @pytest.mark.django_db
@@ -69,6 +87,22 @@ def test_book_stock():
     )
 
     assert book.stock == 20
+
+
+# Generated with AI, reviewed and modified
+@pytest.mark.django_db
+def test_book_stock_defaults_to_zero():
+    category = CategoryFactory()
+
+    book = Book(
+        title="New Book",
+        author="Test Author",
+        price=Decimal("50.00"),
+        description="Test description",
+        category=category,
+    )
+
+    assert book.stock == 0
 
 
 @pytest.mark.django_db

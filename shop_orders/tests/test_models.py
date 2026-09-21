@@ -46,6 +46,20 @@ def test_order_user():
     assert order.user is not None
 
 
+# Generated with AI, reviewed and modified
+@pytest.mark.django_db
+def test_order_total_amount_is_saved_as_decimal():
+    order = OrderFactory(
+        total_amount="125.75"
+    )
+
+    order.refresh_from_db()
+
+    assert order.total_amount == Decimal(
+        "125.75"
+    )
+
+
 @pytest.mark.django_db
 def test_order_item_subtotal():
     item = OrderItemFactory(
@@ -55,6 +69,19 @@ def test_order_item_subtotal():
 
     assert item.subtotal == Decimal(
         "300.00"
+    )
+
+
+# Generated with AI, reviewed and modified
+@pytest.mark.django_db
+def test_order_item_subtotal_changes_with_quantity():
+    item = OrderItemFactory(
+        price="75.50",
+        quantity=4,
+    )
+
+    assert item.subtotal == Decimal(
+        "302.00"
     )
 
 

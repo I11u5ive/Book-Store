@@ -16,3 +16,7 @@ pytest-django
 pytest-asyncio
 pytest-cov
 factory-boy
+celery[redis]==5.5.3
+django-redis==6.0.0
+gunicorn
+sentry-sdk[django]

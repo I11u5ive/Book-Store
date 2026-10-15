@@ -47,4 +47,9 @@ urlpatterns = [
         views.checkout_cancel,
         name="cancel",
     ),
+    path(
+        "webhook/",
+        views.stripe_webhook,
+        name="stripe_webhook",
+    ),
 ]

@@ -5,8 +5,7 @@ import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
-from django.db import transaction
+from .services import send_order_confirmation
 from django.http import HttpResponseBadRequest
 from django.shortcuts import (
     get_object_or_404,
@@ -14,6 +13,9 @@ from django.shortcuts import (
     render,
 )
 from django.urls import reverse
+from django.db import transaction
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from books.models import Book
@@ -168,207 +170,136 @@ def cart_clear(request):
         "shop_orders:cart_detail"
     )
 
+def _release_order_stock(order):
+    """
+    Return reserved books to stock.
 
-def send_order_email(order_id):
-    """Send an order confirmation email to the customer."""
+    Call this only while holding a transaction and after confirming
+    that the order is still in the created state.
+    """
+    items = order.items.order_by("book_id")
 
-    order = Order.objects.get(
-        id=order_id,
-    )
-
-    if not order.user.email:
-        return
-
-    lines = []
-
-    for item in order.items.select_related("book"):
-        lines.append(
-            (
-                f"{item.book.title} "
-                f"x {item.quantity} "
-                f"= {item.subtotal}"
-            )
-        )
-
-    items_text = "\n".join(lines)
-
-    message = (
-        f"Hello, {order.user.username}!\n\n"
-        f"Your order #{order.id} has been created.\n\n"
-        f"{items_text}\n\n"
-        f"Total: {order.total_amount}\n"
-    )
-
-    send_mail(
-        subject=f"Order #{order.id} created",
-        message=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[
-            order.user.email,
-        ],
-        fail_silently=False,
-    )
-
+    for item in items:
+        book = Book.objects.select_for_update().get(pk=item.book_id)
+        book.stock += item.quantity
+        book.save(update_fields=["stock"])
 
 @login_required
 @require_POST
+@login_required
+@require_POST
 def checkout(request):
-    """Create an order and Stripe Checkout session from the current cart."""
-
+    """Reserve stock, create an order, and start Stripe Checkout."""
     cart = Cart(request)
-
     cart_items = list(cart)
 
     if not cart_items:
-        messages.warning(
-            request,
-            "Your cart is empty.",
-        )
+        messages.warning(request, "Your cart is empty.")
+        return redirect("shop_orders:cart_detail")
 
-        return redirect(
-            "shop_orders:cart_detail"
-        )
-
-    with transaction.atomic():
-
-        order = Order.objects.create(
-            user=request.user,
-        )
-
-        total_amount = Decimal("0.00")
-
-        stripe_items = []
-
-        for cart_item in cart_items:
-
-            book = Book.objects.select_for_update().get(
-                id=cart_item["book"].id
-            )
-
-            quantity = cart_item["quantity"]
-
-            if book.stock < quantity:
-                raise ValueError(
-                    (
-                        f"Not enough copies of "
-                        f"{book.title}. "
-                        f"Available: {book.stock}"
-                    )
-                )
-
-            OrderItem.objects.create(
-                order=order,
-                book=book,
-                price=book.price,
-                quantity=quantity,
-            )
-
-            item_total = (
-                book.price * quantity
-            )
-
-            total_amount += item_total
-
-            stripe_items.append(
-                {
-                    "price_data": {
-                        "currency": settings.STRIPE_CURRENCY,
-                        "product_data": {
-                            "name": book.title,
-                        },
-                        "unit_amount": int(
-                            book.price
-                            * Decimal("100")
-                        ),
-                    },
-                    "quantity": quantity,
-                }
-            )
-
-        order.total_amount = total_amount
-
-        order.save(
-            update_fields=[
-                "total_amount",
-            ]
-        )
-
-        transaction.on_commit(
-            lambda order_id=order.id:
-            send_order_email(order_id)
-        )
-
-    client = stripe.StripeClient(
-        settings.STRIPE_SECRET_KEY
-    )
+    stripe_items = []
+    total_amount = Decimal("0.00")
 
     try:
-        checkout_session = (
-            client.v1.checkout.sessions.create(
-                params={
-                    "mode": "payment",
+        with transaction.atomic():
+            order = Order.objects.create(user=request.user)
 
-                    "line_items": stripe_items,
+            # Lock books and reserve stock in one database transaction.
+            for cart_item in sorted(
+                cart_items,
+                key=lambda item: item["book"].id,
+            ):
+                book = Book.objects.select_for_update().get(
+                    pk=cart_item["book"].id
+                )
+                quantity = cart_item["quantity"]
 
-                    "success_url": (
-                        request.build_absolute_uri(
-                            reverse(
-                                "shop_orders:success"
-                            )
-                        )
-                        + "?session_id="
-                        + "{CHECKOUT_SESSION_ID}"
-                    ),
+                if quantity <= 0 or book.stock < quantity:
+                    raise ValueError(
+                        f"Not enough copies of {book.title}."
+                    )
 
-                    "cancel_url":
-                        request.build_absolute_uri(
-                            reverse(
-                                "shop_orders:cancel"
-                            )
-                        ),
+                book.stock -= quantity
+                book.save(update_fields=["stock"])
 
-                    "metadata": {
-                        "order_id": str(
-                            order.id
-                        ),
-                    },
+                OrderItem.objects.create(
+                    order=order,
+                    book=book,
+                    price=book.price,
+                    quantity=quantity,
+                )
 
-                    "customer_email":
-                        request.user.email or None,
-                }
-            )
+                total_amount += book.price * quantity
+
+                stripe_items.append(
+                    {
+                        "price_data": {
+                            "currency": settings.STRIPE_CURRENCY,
+                            "product_data": {
+                                "name": book.title,
+                            },
+                            "unit_amount": int(
+                                book.price * Decimal("100")
+                            ),
+                        },
+                        "quantity": quantity,
+                    }
+                )
+
+            order.total_amount = total_amount
+            order.save(update_fields=["total_amount"])
+
+    except ValueError as error:
+        messages.error(request, str(error))
+        return redirect("shop_orders:cart_detail")
+
+    try:
+        client = stripe.StripeClient(settings.STRIPE_SECRET_KEY)
+
+        checkout_session = client.v1.checkout.sessions.create(
+            params={
+                "mode": "payment",
+                "line_items": stripe_items,
+                "success_url": (
+                    request.build_absolute_uri(
+                        reverse("shop_orders:success")
+                    )
+                    + "?session_id={CHECKOUT_SESSION_ID}"
+                ),
+                "cancel_url": request.build_absolute_uri(
+                    reverse("shop_orders:cancel")
+                ),
+                "metadata": {
+                    "order_id": str(order.pk),
+                },
+                "customer_email": request.user.email or None,
+            }
         )
 
-    except stripe.StripeError as error:
+    except stripe.StripeError:
+        # Stripe session creation failed: release the reserved stock.
+        with transaction.atomic():
+            locked_order = Order.objects.select_for_update().get(
+                pk=order.pk
+            )
+
+            if locked_order.status == Order.STATUS_CREATED:
+                _release_order_stock(locked_order)
+                locked_order.status = Order.STATUS_CANCELLED
+                locked_order.save(update_fields=["status"])
 
         messages.error(
             request,
-            f"Stripe error: {error}",
+            "We could not start the payment. Please try again.",
         )
+        return redirect("shop_orders:cart_detail")
 
-        return redirect(
-            "shop_orders:cart_detail"
-        )
+    # Store the session ID only after Stripe creates the session.
+    order.stripe_session_id = checkout_session.id
+    order.save(update_fields=["stripe_session_id"])
 
-    order.stripe_session_id = (
-        checkout_session.id
-    )
-
-    order.save(
-        update_fields=[
-            "stripe_session_id",
-        ]
-    )
-
-    #
-    # Stripe Session успешно создана,
-    # поэтому очищаем корзину.
-    #
     cart.clear()
-
-    return redirect(
-        checkout_session.url
-    )
+    return redirect(checkout_session.url)
 
 
 @login_required
@@ -404,3 +335,76 @@ def checkout_cancel(request):
         request,
         "shop_orders/cancel.html",
     )
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    """Process verified Stripe payment and expiration events."""
+    webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    if not webhook_secret:
+        return HttpResponse(
+            "Stripe webhook is not configured.",
+            status=500,
+        )
+
+    signature = request.META.get("HTTP_STRIPE_SIGNATURE", "")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            request.body,
+            signature,
+            webhook_secret,
+        )
+    except (ValueError, stripe.SignatureVerificationError):
+        return HttpResponseBadRequest("Invalid Stripe webhook.")
+
+    event_type = event["type"]
+    session = event["data"]["object"]
+
+    if event_type not in {
+        "checkout.session.completed",
+        "checkout.session.expired",
+    }:
+        return HttpResponse(status=200)
+
+    order_id = session.get("metadata", {}).get("order_id")
+
+    if not order_id:
+        return HttpResponse(status=200)
+
+    with transaction.atomic():
+        order = (
+            Order.objects.select_for_update()
+            .filter(pk=order_id)
+            .first()
+        )
+
+        if order is None:
+            return HttpResponse(status=200)
+
+        # Ensure the event belongs to this order's Stripe session.
+        if order.stripe_session_id != session.get("id"):
+            return HttpResponse(status=200)
+
+        if event_type == "checkout.session.completed":
+            # A completed Checkout session is not sufficient by itself.
+            if (
+                session.get("payment_status") == "paid"
+                and order.status == Order.STATUS_CREATED
+            ):
+                order.status = Order.STATUS_PAID
+                order.save(update_fields=["status"])
+
+                # The service queues the email after commit.
+                send_order_confirmation(order)
+
+        elif (
+            event_type == "checkout.session.expired"
+            and order.status == Order.STATUS_CREATED
+        ):
+            _release_order_stock(order)
+            order.status = Order.STATUS_CANCELLED
+            order.save(update_fields=["status"])
+
+    return HttpResponse(status=200)

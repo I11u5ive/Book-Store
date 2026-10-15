@@ -241,21 +241,27 @@ def test_stripe_checkout_is_mocked(
     )
 
 
-@pytest.mark.django_db
-@patch(
-    "shop_orders.views.send_mail"
-)
-def test_email_service_is_mocked(
-    mock_send_mail,
-):
-    mock_send_mail(
-        "Order",
-        "Order created",
-        "shop@example.com",
-        ["user@example.com"],
-    )
 
-    mock_send_mail.assert_called_once()
+
+@pytest.mark.django_db
+def test_email_service_is_mocked(django_capture_on_commit_callbacks):
+    from unittest.mock import Mock, patch
+
+    from shop_orders.models import Order
+    from shop_orders.services import send_order_confirmation
+
+    order = Mock(spec=Order)
+    order.pk = 123
+
+    with patch(
+        "shop_orders.services.send_order_confirmation_email.delay"
+    ) as mock_delay:
+        with django_capture_on_commit_callbacks(execute=True) as callbacks:
+            send_order_confirmation(order)
+
+    assert len(callbacks) == 1
+    mock_delay.assert_called_once_with(123)
+
 
 
 @pytest.mark.django_db

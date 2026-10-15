@@ -1,21 +1,12 @@
-from django.conf import settings
-from django.core.mail import send_mail
-from django.utils.translation import gettext_lazy as _
+from django.db import transaction
+
+from shop_orders.tasks import send_order_confirmation_email
 
 
 def send_order_confirmation(order):
-    subject = _("Order confirmation")
+    """Schedule confirmation email after the transaction commits."""
+    order_id = order.pk
 
-    message = _(
-        "Your order #%(order_id)s has been created."
-    ) % {
-        "order_id": order.pk,
-    }
-
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [order.user.email],
-        fail_silently=False,
+    transaction.on_commit(
+        lambda order_id=order_id: send_order_confirmation_email.delay(order_id)
     )

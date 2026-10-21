@@ -1,5 +1,9 @@
 # BookStore
 
+[![Django CI/CD](https://github.com/I11u5ive/Book-Store/actions/workflows/django.yml/badge.svg?branch=main)](https://github.com/I11u5ive/Book-Store/actions/workflows/django.yml)
+
+[![Coverage](https://codecov.io/gh/I11u5ive/Book-Store/branch/main/graph/badge.svg)](https://codecov.io/gh/I11u5ive/Book-Store)
+
 Django-based online bookstore with PostgreSQL, Redis, authentication, shopping cart, orders, Stripe Checkout integration, asynchronous views, tests, and AI-assisted development.
 
 ## Project Features

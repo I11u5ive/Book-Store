@@ -10,7 +10,6 @@ from shop_orders.models import Order
 
 from users.models import User
 
-
 pytestmark = pytest.mark.django_db
 
 
@@ -186,10 +185,7 @@ def test_book_search(api_client, user, book, second_book):
 
     assert response.status_code == status.HTTP_200_OK
 
-    titles = [
-        item["title"]
-        for item in response.data["results"]
-    ]
+    titles = [item["title"] for item in response.data["results"]]
 
     assert "The Hobbit" in titles
     assert "Dune" not in titles
@@ -259,10 +255,7 @@ def test_book_ordering_by_price(
 
     assert response.status_code == status.HTTP_200_OK
 
-    prices = [
-        Decimal(str(item["price"]))
-        for item in response.data["results"]
-    ]
+    prices = [Decimal(str(item["price"])) for item in response.data["results"]]
 
     assert prices == sorted(prices)
 
@@ -395,10 +388,7 @@ def test_category_search(
 
     assert response.status_code == status.HTTP_200_OK
 
-    names = [
-        item["name"]
-        for item in response.data["results"]
-    ]
+    names = [item["name"] for item in response.data["results"]]
 
     assert "Fantasy" in names
     assert "Science Fiction" not in names
@@ -465,10 +455,7 @@ def test_user_sees_only_own_orders(
 
     assert response.status_code == status.HTTP_200_OK
 
-    order_ids = [
-        item["id"]
-        for item in response.data["results"]
-    ]
+    order_ids = [item["id"] for item in response.data["results"]]
 
     assert own_order.id in order_ids
     assert len(order_ids) == 1
@@ -530,10 +517,7 @@ def test_staff_can_see_all_orders(
 
     assert response.status_code == status.HTTP_200_OK
 
-    order_ids = {
-        item["id"]
-        for item in response.data["results"]
-    }
+    order_ids = {item["id"] for item in response.data["results"]}
 
     assert first_order.id in order_ids
     assert second_order.id in order_ids
@@ -570,9 +554,7 @@ def test_cart_is_empty_for_new_user(
     assert response.status_code == status.HTTP_200_OK
     assert response.data["items"] == []
     assert response.data["total_quantity"] == 0
-    assert Decimal(
-        str(response.data["total_price"])
-    ) == Decimal("0")
+    assert Decimal(str(response.data["total_price"])) == Decimal("0")
 
 
 def test_cart_add_book(

@@ -74,9 +74,7 @@ def generate_orders_report():
 
     output = StringIO()
     writer = csv.writer(output)
-    writer.writerow(
-        ["Order ID", "Created at", "Username", "Status", "Total amount"]
-    )
+    writer.writerow(["Order ID", "Created at", "Username", "Status", "Total amount"])
 
     count = 0
     total = Decimal("0.00")

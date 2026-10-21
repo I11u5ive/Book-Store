@@ -10,7 +10,6 @@ from .views import (
     OrderViewSet,
 )
 
-
 router = DefaultRouter()
 
 

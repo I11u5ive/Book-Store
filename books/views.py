@@ -1,4 +1,3 @@
-
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -29,6 +28,7 @@ logger = logging.getLogger(__name__)
 @method_decorator(vary_on_cookie, name="dispatch")
 class BookListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     """Display a cached, paginated list of books."""
+
     model = Book
     template_name = "books/book_list.html"
     context_object_name = "books"
@@ -54,6 +54,7 @@ class BookListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
 class BookDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     """Display book details using the low-level Redis cache."""
+
     model = Book
     template_name = "books/book_detail.html"
     context_object_name = "book"
@@ -65,13 +66,10 @@ class BookDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
 
         book = cache.get(key)
         if book is None:
-            book = (
-                Book.objects.select_related("category")
-                .filter(pk=book_id)
-                .first()
-            )
+            book = Book.objects.select_related("category").filter(pk=book_id).first()
             if book is None:
                 from django.http import Http404
+
                 raise Http404("Book not found")
             cache.set(key, book, timeout=300)
 

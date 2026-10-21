@@ -24,9 +24,7 @@ def test_registration_flow(client):
 
     assert response.status_code == 302
 
-    assert User.objects.filter(
-        username="integration_user"
-    ).exists()
+    assert User.objects.filter(username="integration_user").exists()
 
 
 @pytest.mark.django_db
@@ -43,9 +41,7 @@ def test_registration_invalid_password(client):
 
     assert response.status_code == 200
 
-    assert not User.objects.filter(
-        username="integration_user"
-    ).exists()
+    assert not User.objects.filter(username="integration_user").exists()
 
 
 @pytest.mark.django_db
@@ -69,9 +65,7 @@ def test_logout_flow(client):
 
     client.force_login(user)
 
-    response = client.post(
-        reverse("users:logout")
-    )
+    response = client.post(reverse("users:logout"))
 
     assert response.status_code == 302
 
@@ -84,9 +78,7 @@ def test_open_books_flow(client):
 
     BookFactory.create_batch(3)
 
-    response = client.get(
-        reverse("books:list")
-    )
+    response = client.get(reverse("books:list"))
 
     assert response.status_code in (
         200,
@@ -120,13 +112,9 @@ def test_search_books_flow(client):
 
     client.force_login(user)
 
-    BookFactory(
-        title="The Hobbit"
-    )
+    BookFactory(title="The Hobbit")
 
-    BookFactory(
-        title="The Last Algorithm"
-    )
+    BookFactory(title="The Last Algorithm")
 
     response = client.get(
         reverse("books:list"),
@@ -163,9 +151,7 @@ def test_cart_requires_login(client):
 
 @pytest.mark.django_db
 def test_cart_page_requires_login(client):
-    response = client.get(
-        reverse("shop_orders:cart")
-    )
+    response = client.get(reverse("shop_orders:cart"))
 
     assert response.status_code in (
         302,
@@ -177,9 +163,7 @@ def test_cart_page_requires_login(client):
 def test_order_belongs_to_user():
     user = UserFactory()
 
-    order = OrderFactory(
-        user=user
-    )
+    order = OrderFactory(user=user)
 
     assert order.user == user
 
@@ -199,9 +183,7 @@ def test_multiple_orders_for_user():
 @pytest.mark.django_db
 def test_book_detail_then_cart_flow(client):
     user = UserFactory()
-    book = BookFactory(
-        stock=10
-    )
+    book = BookFactory(stock=10)
 
     client.force_login(user)
 
@@ -219,9 +201,7 @@ def test_book_detail_then_cart_flow(client):
 
 
 @pytest.mark.django_db
-@patch(
-    "shop_orders.views.stripe.checkout.Session.create"
-)
+@patch("shop_orders.views.stripe.checkout.Session.create")
 def test_stripe_checkout_is_mocked(
     mock_stripe_create,
 ):
@@ -230,17 +210,11 @@ def test_stripe_checkout_is_mocked(
         "url": "https://example.com/checkout",
     }
 
-    result = mock_stripe_create(
-        mode="payment"
-    )
+    result = mock_stripe_create(mode="payment")
 
     assert result["id"] == "cs_test_123"
 
-    mock_stripe_create.assert_called_once_with(
-        mode="payment"
-    )
-
-
+    mock_stripe_create.assert_called_once_with(mode="payment")
 
 
 @pytest.mark.django_db
@@ -263,7 +237,6 @@ def test_email_service_is_mocked(django_capture_on_commit_callbacks):
     mock_delay.assert_called_once_with(123)
 
 
-
 @pytest.mark.django_db
 def test_authenticated_user_can_access_orders():
     user = UserFactory()
@@ -278,9 +251,7 @@ def test_authenticated_user_can_access_orders():
 
 @pytest.mark.django_db
 def test_book_stock_is_available_for_cart():
-    book = BookFactory(
-        stock=5
-    )
+    book = BookFactory(stock=5)
 
     assert book.stock == 5
 
@@ -289,22 +260,14 @@ def test_book_stock_is_available_for_cart():
 def test_order_status_flow():
     from shop_orders.models import Order
 
-    order = OrderFactory(
-        status=Order.STATUS_CREATED
-    )
+    order = OrderFactory(status=Order.STATUS_CREATED)
 
-    assert order.status == (
-        Order.STATUS_CREATED
-    )
+    assert order.status == (Order.STATUS_CREATED)
 
     order.status = Order.STATUS_PAID
 
-    order.save(
-        update_fields=["status"]
-    )
+    order.save(update_fields=["status"])
 
     order.refresh_from_db()
 
-    assert order.status == (
-        Order.STATUS_PAID
-    )
+    assert order.status == (Order.STATUS_PAID)

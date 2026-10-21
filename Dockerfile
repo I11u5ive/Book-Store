@@ -1,3 +1,4 @@
+
 FROM python:3.14-slim
 
 WORKDIR /app
@@ -18,3 +19,5 @@ COPY . .
 RUN chmod +x docker-entrypoint.sh
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
+
+CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-3} --timeout 60"]

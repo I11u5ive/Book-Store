@@ -10,9 +10,7 @@ class BookInline(admin.TabularInline):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "slug")
-    prepopulated_fields = {
-        "slug": ("name",)
-    }
+    prepopulated_fields = {"slug": ("name",)}
 
     search_fields = ("name",)
 
@@ -21,13 +19,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = (
-        "title",
-        "author",
-        "price",
-        "stock",
-        "category"
-    )
+    list_display = ("title", "author", "price", "stock", "category")
 
     list_filter = (
         "category",

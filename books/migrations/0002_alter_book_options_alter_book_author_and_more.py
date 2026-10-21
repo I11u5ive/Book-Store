@@ -7,52 +7,59 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('books', '0001_initial'),
+        ("books", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='book',
-            options={'verbose_name': 'Book', 'verbose_name_plural': 'Books'},
+            name="book",
+            options={"verbose_name": "Book", "verbose_name_plural": "Books"},
         ),
         migrations.AlterField(
-            model_name='book',
-            name='author',
-            field=models.CharField(max_length=200, verbose_name='Author'),
+            model_name="book",
+            name="author",
+            field=models.CharField(max_length=200, verbose_name="Author"),
         ),
         migrations.AlterField(
-            model_name='book',
-            name='category',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='books', to='books.category', verbose_name='Category'),
+            model_name="book",
+            name="category",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="books",
+                to="books.category",
+                verbose_name="Category",
+            ),
         ),
         migrations.AlterField(
-            model_name='book',
-            name='description',
-            field=models.TextField(verbose_name='Description'),
+            model_name="book",
+            name="description",
+            field=models.TextField(verbose_name="Description"),
         ),
         migrations.AlterField(
-            model_name='book',
-            name='price',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Price'),
+            model_name="book",
+            name="price",
+            field=models.DecimalField(
+                decimal_places=2, max_digits=10, verbose_name="Price"
+            ),
         ),
         migrations.AlterField(
-            model_name='book',
-            name='stock',
-            field=models.PositiveIntegerField(default=0, verbose_name='Stock'),
+            model_name="book",
+            name="stock",
+            field=models.PositiveIntegerField(default=0, verbose_name="Stock"),
         ),
         migrations.AlterField(
-            model_name='book',
-            name='title',
-            field=models.CharField(max_length=200, verbose_name='Title'),
+            model_name="book",
+            name="title",
+            field=models.CharField(max_length=200, verbose_name="Title"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='Name'),
+            model_name="category",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="Name"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='slug',
-            field=models.SlugField(unique=True, verbose_name='Slug'),
+            model_name="category",
+            name="slug",
+            field=models.SlugField(unique=True, verbose_name="Slug"),
         ),
     ]

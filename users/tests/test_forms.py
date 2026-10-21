@@ -2,7 +2,6 @@ import pytest
 
 from users.forms import UserRegisterForm
 
-
 pytestmark = pytest.mark.django_db
 
 

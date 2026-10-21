@@ -57,14 +57,10 @@ def cart_add(request, book_id):
             )
         )
     except ValueError:
-        return HttpResponseBadRequest(
-            "Invalid quantity"
-        )
+        return HttpResponseBadRequest("Invalid quantity")
 
     if quantity < 1:
-        return HttpResponseBadRequest(
-            "Quantity must be at least 1"
-        )
+        return HttpResponseBadRequest("Quantity must be at least 1")
 
     if quantity > book.stock:
         messages.error(
@@ -72,9 +68,7 @@ def cart_add(request, book_id):
             f"Only {book.stock} copies available.",
         )
 
-        return redirect(
-            "shop_orders:cart_detail"
-        )
+        return redirect("shop_orders:cart_detail")
 
     cart = Cart(request)
 
@@ -88,9 +82,7 @@ def cart_add(request, book_id):
         f'"{book.title}" added to cart.',
     )
 
-    return redirect(
-        "shop_orders:cart_detail"
-    )
+    return redirect("shop_orders:cart_detail")
 
 
 @login_required
@@ -111,9 +103,7 @@ def cart_update(request, book_id):
             )
         )
     except ValueError:
-        return HttpResponseBadRequest(
-            "Invalid quantity"
-        )
+        return HttpResponseBadRequest("Invalid quantity")
 
     cart = Cart(request)
 
@@ -133,9 +123,7 @@ def cart_update(request, book_id):
             override_quantity=True,
         )
 
-    return redirect(
-        "shop_orders:cart_detail"
-    )
+    return redirect("shop_orders:cart_detail")
 
 
 @login_required
@@ -152,9 +140,7 @@ def cart_remove(request, book_id):
 
     cart.remove(book)
 
-    return redirect(
-        "shop_orders:cart_detail"
-    )
+    return redirect("shop_orders:cart_detail")
 
 
 @login_required
@@ -166,9 +152,8 @@ def cart_clear(request):
 
     cart.clear()
 
-    return redirect(
-        "shop_orders:cart_detail"
-    )
+    return redirect("shop_orders:cart_detail")
+
 
 def _release_order_stock(order):
     """
@@ -183,6 +168,7 @@ def _release_order_stock(order):
         book = Book.objects.select_for_update().get(pk=item.book_id)
         book.stock += item.quantity
         book.save(update_fields=["stock"])
+
 
 @login_required
 @require_POST
@@ -209,15 +195,11 @@ def checkout(request):
                 cart_items,
                 key=lambda item: item["book"].id,
             ):
-                book = Book.objects.select_for_update().get(
-                    pk=cart_item["book"].id
-                )
+                book = Book.objects.select_for_update().get(pk=cart_item["book"].id)
                 quantity = cart_item["quantity"]
 
                 if quantity <= 0 or book.stock < quantity:
-                    raise ValueError(
-                        f"Not enough copies of {book.title}."
-                    )
+                    raise ValueError(f"Not enough copies of {book.title}.")
 
                 book.stock -= quantity
                 book.save(update_fields=["stock"])
@@ -238,9 +220,7 @@ def checkout(request):
                             "product_data": {
                                 "name": book.title,
                             },
-                            "unit_amount": int(
-                                book.price * Decimal("100")
-                            ),
+                            "unit_amount": int(book.price * Decimal("100")),
                         },
                         "quantity": quantity,
                     }
@@ -261,14 +241,10 @@ def checkout(request):
                 "mode": "payment",
                 "line_items": stripe_items,
                 "success_url": (
-                    request.build_absolute_uri(
-                        reverse("shop_orders:success")
-                    )
+                    request.build_absolute_uri(reverse("shop_orders:success"))
                     + "?session_id={CHECKOUT_SESSION_ID}"
                 ),
-                "cancel_url": request.build_absolute_uri(
-                    reverse("shop_orders:cancel")
-                ),
+                "cancel_url": request.build_absolute_uri(reverse("shop_orders:cancel")),
                 "metadata": {
                     "order_id": str(order.pk),
                 },
@@ -279,9 +255,7 @@ def checkout(request):
     except stripe.StripeError:
         # Stripe session creation failed: release the reserved stock.
         with transaction.atomic():
-            locked_order = Order.objects.select_for_update().get(
-                pk=order.pk
-            )
+            locked_order = Order.objects.select_for_update().get(pk=order.pk)
 
             if locked_order.status == Order.STATUS_CREATED:
                 _release_order_stock(locked_order)
@@ -306,9 +280,7 @@ def checkout(request):
 def checkout_success(request):
     """Display the successful checkout page and related order."""
 
-    session_id = request.GET.get(
-        "session_id"
-    )
+    session_id = request.GET.get("session_id")
 
     order = None
 
@@ -335,6 +307,7 @@ def checkout_cancel(request):
         request,
         "shop_orders/cancel.html",
     )
+
 
 @csrf_exempt
 @require_POST
@@ -374,11 +347,7 @@ def stripe_webhook(request):
         return HttpResponse(status=200)
 
     with transaction.atomic():
-        order = (
-            Order.objects.select_for_update()
-            .filter(pk=order_id)
-            .first()
-        )
+        order = Order.objects.select_for_update().filter(pk=order_id).first()
 
         if order is None:
             return HttpResponse(status=200)

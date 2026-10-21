@@ -8,9 +8,7 @@ from users.tests.factories import UserFactory
 
 @pytest.mark.django_db
 def test_book_list_requires_login(client):
-    response = client.get(
-        reverse("books:list")
-    )
+    response = client.get(reverse("books:list"))
 
     assert response.status_code == 302
 
@@ -23,9 +21,7 @@ def test_book_list_authenticated(client):
 
     BookFactory.create_batch(3)
 
-    response = client.get(
-        reverse("books:list")
-    )
+    response = client.get(reverse("books:list"))
 
     assert response.status_code in (
         200,
@@ -73,9 +69,7 @@ def test_book_search(client):
 
     client.force_login(user)
 
-    BookFactory(
-        title="The Hobbit"
-    )
+    BookFactory(title="The Hobbit")
 
     response = client.get(
         reverse("books:list"),
@@ -92,9 +86,7 @@ def test_book_search(client):
 
 @pytest.mark.django_db
 def test_book_create_requires_login(client):
-    response = client.get(
-        reverse("books:create")
-    )
+    response = client.get(reverse("books:create"))
 
     assert response.status_code == 302
 

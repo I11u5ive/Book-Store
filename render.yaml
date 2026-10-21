@@ -1,0 +1,61 @@
+
+services:
+  - type: web
+    name: bookstore-web
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    autoDeployTrigger: checksPass
+    healthCheckPath: /health/
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+
+      - key: DEBUG
+        value: "False"
+
+      - key: SECRET_KEY
+        generateValue: true
+
+      - key: SENTRY_ENVIRONMENT
+        value: production
+
+      - key: RUN_MIGRATIONS
+        value: "true"
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookstore-db
+          property: connectionString
+
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: bookstore-redis
+          property: connectionString
+
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: keyvalue
+          name: bookstore-redis
+          property: connectionString
+
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: keyvalue
+          name: bookstore-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: bookstore-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+
+databases:
+  - name: bookstore-db
+    databaseName: bookstore
+    user: bookstore
+    plan: free
+    region: frankfurt

@@ -11,37 +11,25 @@ from shop_orders.models import (
 )
 
 
-class OrderFactory(
-    factory.django.DjangoModelFactory
-):
+class OrderFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Order
 
-    user = factory.SubFactory(
-        UserFactory
-    )
+    user = factory.SubFactory(UserFactory)
 
     status = Order.STATUS_CREATED
 
     total_amount = Decimal("100.00")
 
 
-class OrderItemFactory(
-    factory.django.DjangoModelFactory
-):
+class OrderItemFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = OrderItem
 
-    order = factory.SubFactory(
-        OrderFactory
-    )
+    order = factory.SubFactory(OrderFactory)
 
-    book = factory.SubFactory(
-        BookFactory
-    )
+    book = factory.SubFactory(BookFactory)
 
-    price = factory.LazyAttribute(
-        lambda obj: obj.book.price
-    )
+    price = factory.LazyAttribute(lambda obj: obj.book.price)
 
     quantity = 1

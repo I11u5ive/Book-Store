@@ -6,7 +6,6 @@ from django.dispatch import receiver
 
 from .models import Book, Category
 
-
 BOOK_LIST_CACHE_KEY = "books:list:v1"
 BOOK_LIST_PAGE_CACHE_PATTERN = "*cache_page.books_list_v1*"
 BOOK_DETAIL_CACHE_KEY = "books:detail:v1:{book_id}"
@@ -18,10 +17,7 @@ def invalidate_book_fragment_cache(book_id):
     """
     languages = {settings.LANGUAGE_CODE}
 
-    languages.update(
-        language_code
-        for language_code, _ in settings.LANGUAGES
-    )
+    languages.update(language_code for language_code, _ in settings.LANGUAGES)
 
     for language_code in languages:
         key = make_template_fragment_key(
@@ -55,9 +51,7 @@ def invalidate_books_before_category_delete(sender, instance, **kwargs):
     Invalidate related books before deleting their category.
     """
     book_ids = list(
-        Book.objects.filter(
-            category_id=instance.pk
-        ).values_list("pk", flat=True)
+        Book.objects.filter(category_id=instance.pk).values_list("pk", flat=True)
     )
 
     invalidate_book_cache()
@@ -73,9 +67,7 @@ def invalidate_books_after_category_save(sender, instance, **kwargs):
     """
     invalidate_book_cache()
 
-    book_ids = Book.objects.filter(
-        category_id=instance.pk
-    ).values_list("pk", flat=True)
+    book_ids = Book.objects.filter(category_id=instance.pk).values_list("pk", flat=True)
 
     for book_id in book_ids:
         invalidate_book_cache(book_id)

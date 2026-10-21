@@ -36,8 +36,7 @@ async def async_book_search(request):
 
     if search:
         queryset = queryset.filter(
-            Q(title__icontains=search)
-            | Q(author__icontains=search)
+            Q(title__icontains=search) | Q(author__icontains=search)
         )
 
     books = []

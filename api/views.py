@@ -34,7 +34,6 @@ from .serializers import (
     OrderSerializer,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -99,12 +98,7 @@ class BookViewSet(viewsets.ModelViewSet):
     Only administrators can create, update or delete books.
     """
 
-    queryset = (
-        Book.objects
-        .select_related("category")
-        .all()
-        .order_by("title")
-    )
+    queryset = Book.objects.select_related("category").all().order_by("title")
 
     serializer_class = BookSerializer
 
@@ -211,8 +205,7 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
             return Order.objects.none()
 
         queryset = (
-            Order.objects
-            .select_related("user")
+            Order.objects.select_related("user")
             .prefetch_related(
                 "items__book__category",
             )
@@ -333,10 +326,7 @@ class CartViewSet(viewsets.ViewSet):
         ):
             return Response(
                 {
-                    "detail": (
-                        "book_id and quantity "
-                        "must be integers."
-                    ),
+                    "detail": ("book_id and quantity " "must be integers."),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -344,10 +334,7 @@ class CartViewSet(viewsets.ViewSet):
         if quantity <= 0:
             return Response(
                 {
-                    "detail": (
-                        "quantity must be greater "
-                        "than zero."
-                    ),
+                    "detail": ("quantity must be greater " "than zero."),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -394,16 +381,10 @@ class CartViewSet(viewsets.ViewSet):
         book_id = request.data.get("book_id")
         quantity = request.data.get("quantity")
 
-        if (
-            book_id is None
-            or quantity is None
-        ):
+        if book_id is None or quantity is None:
             return Response(
                 {
-                    "detail": (
-                        "book_id and quantity "
-                        "are required."
-                    ),
+                    "detail": ("book_id and quantity " "are required."),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -417,10 +398,7 @@ class CartViewSet(viewsets.ViewSet):
         ):
             return Response(
                 {
-                    "detail": (
-                        "book_id and quantity "
-                        "must be integers."
-                    ),
+                    "detail": ("book_id and quantity " "must be integers."),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -428,9 +406,7 @@ class CartViewSet(viewsets.ViewSet):
         if quantity < 0:
             return Response(
                 {
-                    "detail": (
-                        "quantity cannot be negative."
-                    ),
+                    "detail": ("quantity cannot be negative."),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -493,9 +469,7 @@ class CartViewSet(viewsets.ViewSet):
         ):
             return Response(
                 {
-                    "detail": (
-                        "book_id must be an integer."
-                    ),
+                    "detail": ("book_id must be an integer."),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )

@@ -3,7 +3,6 @@ import pytest
 from books.forms import BookForm
 from books.tests.factories import CategoryFactory
 
-
 pytestmark = pytest.mark.django_db
 
 
@@ -80,6 +79,4 @@ def test_book_form_has_category():
 
     form = BookForm()
 
-    assert form.fields["category"].queryset.filter(
-        pk=category.pk
-    ).exists()
+    assert form.fields["category"].queryset.filter(pk=category.pk).exists()

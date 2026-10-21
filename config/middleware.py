@@ -11,17 +11,10 @@ class RequestLoggingMiddleware:
 
     def __call__(self, request):
 
-        logger.info(
-            "Request: %s %s",
-            request.method,
-            request.path
-        )
+        logger.info("Request: %s %s", request.method, request.path)
 
         response = self.get_response(request)
 
-        logger.info(
-            "Response: %s",
-            response.status_code
-        )
+        logger.info("Response: %s", response.status_code)
 
         return response

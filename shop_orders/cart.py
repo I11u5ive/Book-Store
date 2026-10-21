@@ -2,7 +2,6 @@ from decimal import Decimal
 
 from books.models import Book
 
-
 CART_SESSION_ID = "cart"
 
 
@@ -57,10 +56,7 @@ class Cart:
         self.session.modified = True
 
     def __len__(self):
-        return sum(
-            item["quantity"]
-            for item in self.cart.values()
-        )
+        return sum(item["quantity"] for item in self.cart.values())
 
     def __iter__(self):
         book_ids = self.cart.keys()
@@ -69,10 +65,7 @@ class Cart:
             id__in=book_ids,
         )
 
-        books_by_id = {
-            str(book.id): book
-            for book in books
-        }
+        books_by_id = {str(book.id): book for book in books}
 
         for book_id, cart_item in self.cart.items():
 
@@ -92,9 +85,6 @@ class Cart:
 
     def get_total_price(self):
         return sum(
-            (
-                item["total_price"]
-                for item in self
-            ),
+            (item["total_price"] for item in self),
             Decimal("0.00"),
         )

@@ -40,10 +40,7 @@ def test_book_save_invalidates_list_page_cache():
     book = BookFactory()
 
     # Simulate a cached response created by cache_page.
-    key = (
-        "views.decorators.cache.cache_page."
-        "books_list_v1.GET.test-cache-key"
-    )
+    key = "views.decorators.cache.cache_page." "books_list_v1.GET.test-cache-key"
     cache.set(key, "cached list", timeout=300)
     assert cache.get(key) == "cached list"
 

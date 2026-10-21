@@ -11,9 +11,7 @@ from books.tests.factories import BookFactory
 async def test_async_book_count(async_client):
     await sync_to_async(BookFactory.create_batch)(5)
 
-    response = await async_client.get(
-        reverse("books:async_count")
-    )
+    response = await async_client.get(reverse("books:async_count"))
 
     assert response.status_code == 200
 
@@ -25,13 +23,9 @@ async def test_async_book_count(async_client):
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_async_book_list(async_client):
-    await sync_to_async(BookFactory)(
-        title="The Hobbit"
-    )
+    await sync_to_async(BookFactory)(title="The Hobbit")
 
-    response = await async_client.get(
-        reverse("books:async_list")
-    )
+    response = await async_client.get(reverse("books:async_list"))
 
     assert response.status_code == 200
 
@@ -39,21 +33,15 @@ async def test_async_book_list(async_client):
 
     assert len(data["books"]) == 1
 
-    assert data["books"][0]["title"] == (
-        "The Hobbit"
-    )
+    assert data["books"][0]["title"] == ("The Hobbit")
 
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_async_book_search(async_client):
-    await sync_to_async(BookFactory)(
-        title="The Hobbit"
-    )
+    await sync_to_async(BookFactory)(title="The Hobbit")
 
-    await sync_to_async(BookFactory)(
-        title="The Last Algorithm"
-    )
+    await sync_to_async(BookFactory)(title="The Last Algorithm")
 
     response = await async_client.get(
         reverse("books:async_search"),
@@ -68,6 +56,4 @@ async def test_async_book_search(async_client):
 
     assert len(data["books"]) == 1
 
-    assert data["books"][0]["title"] == (
-        "The Hobbit"
-    )
+    assert data["books"][0]["title"] == ("The Hobbit")

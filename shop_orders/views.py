@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .services import send_order_confirmation
-from django.http import HttpResponseBadRequest
 from django.shortcuts import (
     get_object_or_404,
     redirect,

@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.mail import EmailMessage, send_mail
 from django.utils import timezone
-from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 

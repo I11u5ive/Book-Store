@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from django.db import IntegrityError
 
-from books.models import Book, Category
+from books.models import Book
 
 from .factories import (
     BookFactory,

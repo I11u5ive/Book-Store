@@ -1,4 +1,7 @@
 {% extends "books/base.html" %}
+{% load cache i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
 {% load i18n %}
 
 {% block title %}

@@ -1,240 +1,110 @@
-# BookStore
+# BookStore Microservices (ProjectA + ProjectB)
 
-[![Django CI/CD](https://github.com/I11u5ive/Book-Store/actions/workflows/django.yml/badge.svg?branch=main)](https://github.com/I11u5ive/Book-Store/actions/workflows/django.yml)
+The repository contains two independent Django applications that communicate over REST API.
 
-[![Coverage](https://codecov.io/gh/I11u5ive/Book-Store/branch/main/graph/badge.svg)](https://codecov.io/gh/I11u5ive/Book-Store)
+- **ProjectA (root folder)** is the existing bookstore: books/categories, users, cart/orders, JWT/DRF API, PostgreSQL, Redis cache, Celery worker/beat, Gunicorn, NGINX, i18n and optional Sentry.
+- **ProjectB (`ProjectB/`)** is a separate warehouse stock service with its own custom users, PostgreSQL database, Redis, Celery worker/beat, JWT API, stock permissions, caching, analytics and Swagger.
 
-Django-based online bookstore with PostgreSQL, Redis, authentication, shopping cart, orders, Stripe Checkout integration, asynchronous views, tests, and AI-assisted development.
+## Architecture
 
-## Project Features
+```mermaid
+flowchart LR
+    Browser[Browser / API client] --> NGINX[NGINX reverse proxy]
+    NGINX --> A[ProjectA: BookStore + Gunicorn]
+    NGINX --> B[ProjectB: Warehouse + Gunicorn]
+    A --> DB_A[(PostgreSQL: bookstore)]
+    A --> R_A[(Redis: ProjectA cache/broker)]
+    A -->|REST + X-Service-Token| B
+    B --> DB_B[(PostgreSQL: warehouse)]
+    B --> R_B[(Redis: ProjectB cache/broker)]
+    R_A --> CA[ProjectA Celery worker/beat]
+    R_B --> CB[ProjectB Celery worker/beat]
+    A -. optional errors .-> S[Sentry]
+    B -. optional errors .-> S
+```
 
-* Django web application for an online bookstore
-* Book and category management
-* Custom Django User model
-* User registration, login, and logout
-* Authentication and permission-based access control
-* Class-based views for book CRUD operations
-* Book search by title and author
-* Pagination
-* Shopping cart
-* Order creation
-* Stripe Checkout integration
-* Order confirmation email
-* PostgreSQL database
-* Redis service
-* Docker Compose environment
-* Asynchronous Django views
-* Automated tests with pytest
-* Code coverage analysis
-* Django Debug Toolbar
-* Request logging middleware
-* Internationalization support
+ProjectA never connects directly to ProjectB's database. It uses `GET /api/warehouse/books/<book_id>/` to retrieve stock and `POST /api/warehouse/sync/<book_id>/` to synchronize a BookStore book into the warehouse. The internal ProjectB API validates `X-Service-Token`. Requests have timeouts, response validation, HTTP error mapping and log entries.
 
-## Technologies
+## First-time setup
 
-* Python
-* Django
-* PostgreSQL
-* Redis
-* Docker
-* Docker Compose
-* pytest
-* pytest-django
-* pytest-asyncio
-* factory_boy
-* Stripe API
-* Bootstrap
-
-## Running the Project
-
-Build and start the containers:
+Run commands from the repository root (the existing `~/BookStore` directory):
 
 ```bash
-docker compose up --build
-```
+# 1. Create secrets if these lines are not in .env yet.
+grep -q '^PROJECTB_SECRET_KEY=' .env || echo "PROJECTB_SECRET_KEY=$(openssl rand -hex 32)" >> .env
+grep -q '^WAREHOUSE_SERVICE_TOKEN=' .env || echo "WAREHOUSE_SERVICE_TOKEN=$(openssl rand -hex 32)" >> .env
 
-The application is available on:
-
-```text
-http://localhost:8000/
-```
-
-To stop the containers:
-
-```bash
-docker compose down
-```
-
-To stop the containers and remove volumes:
-
-```bash
-docker compose down -v
-```
-
-## Running Tests
-
-Run the complete test suite:
-
-```bash
-docker compose exec web pytest
-```
-
-Run tests with coverage:
-
-```bash
-docker compose exec web pytest --cov=. --cov-report=term-missing -q
-```
-
-The project should maintain at least 60% code coverage as required by the coursework.
-
-## Database
-
-The project uses PostgreSQL when running through Docker Compose.
-
-Django database configuration is provided through environment variables stored in `.env`.
-
-Database migrations are applied automatically by the Docker entrypoint when the application container starts.
-
-## AI Usage
-
-Artificial intelligence was used as a development and code-review assistant during the implementation of this project.
-
-AI was used for:
-
-* Reviewing Django views and identifying potential improvements.
-* Reviewing authentication and permission handling.
-* Reviewing Django ORM queries and database access.
-* Reviewing the shopping cart and checkout implementation.
-* Identifying opportunities for refactoring.
-* Generating and improving automated tests.
-* Reviewing asynchronous Django views and async tests.
-* Analysing test coverage.
-* Checking and improving view docstrings.
-* Investigating pytest and factory_boy warnings.
-* Preparing documentation for the development process.
-
-### AI Code Review
-
-The following areas were reviewed with AI assistance:
-
-* `books/views.py`
-* `shop_orders/views.py`
-* `shop_orders/cart.py`
-* `shop_orders/services.py`
-* authentication and permission-related code
-* database and ORM usage
-* asynchronous views and tests
-
-The AI review identified several possible improvements.
-
-One concrete improvement was applied to `BookDeleteView`: the view originally did not explicitly define the required delete permission. The following permission was added:
-
-```python
-permission_required = "books.delete_book"
-```
-
-The existing `select_related("category")` optimization and `Q`-based search were reviewed and retained because they were appropriate for the current implementation.
-
-The checkout code was also reviewed as a possible refactoring target because the `checkout()` view contains several responsibilities, including order creation, stock validation, Stripe session preparation, email scheduling, and cart handling.
-
-### AI Recommendations That Were Tested and Rejected
-
-AI was also used to investigate a factory_boy deprecation warning.
-
-A recommendation was tested to add:
-
-```python
-skip_postgeneration_save = True
-```
-
-to `UserFactory`.
-
-The change was not kept because it caused authentication-related tests to fail. The existing `UserFactory` uses a post-generation password operation, and the tests depend on the resulting user instance being saved.
-
-After reverting the change, the complete test suite returned to:
-
-```text
-53 passed
-```
-
-Therefore, the warning was documented rather than fixed through a change that would reduce the correctness of the test suite.
-
-### Testing and Verification
-
-AI-generated or AI-assisted tests were reviewed and executed against the project.
-
-The final test suite currently passes:
-
-```text
-53 passed
-```
-
-Coverage was also checked with pytest-cov. The measured project coverage was:
-
-```text
-82%
-```
-
-which is above the required 60% threshold.
-
-An asynchronous PostgreSQL test-database teardown warning was also observed during testing. It was documented as a test-environment warning rather than treated as an application failure because the tests themselves completed successfully.
-
-### Human Review
-
-AI suggestions were not applied automatically.
-
-Each proposed change was reviewed and tested against the existing project. Changes that improved the code without breaking existing functionality were retained, while changes that caused regressions were reverted.
-
-The AI interaction history and prompts used during the development process are documented in:
-
-* `AI_REVIEW.md`
-* `AI_PROMPTS.md`
-
-## Project Structure
-
-```text
-BookStore/
-├── books/
-├── users/
-├── shop_orders/
-├── config/
-├── locale/
-├── Dockerfile
-├── docker-compose.yml
-├── docker-entrypoint.sh
-├── manage.py
-├── pytest.ini
-├── requirements.txt
-├── .env
-├── AI_REVIEW.md
-├── AI_PROMPTS.md
-└── README.md
-```
-
-## Development Notes
-
-The project is developed and tested inside the Docker Compose environment.
-
-After changing Python source files, rebuild the application image when necessary:
-
-```bash
+# 2. Build and start the complete stack (ProjectB's initial migrations are included).
+docker compose config
 docker compose up -d --build
 ```
 
-Check running containers with:
+The ProjectA `.env` file must retain the existing `SECRET_KEY`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `DATABASE_URL`, and `ALLOWED_HOSTS` values. Do not commit `.env` or production secrets.
+
+## Addresses
+
+- BookStore UI: `http://localhost/` (through NGINX) or `http://localhost:8000/` (direct app port for local development).
+- BookStore Swagger: `http://localhost/api/docs/` or `http://localhost:8000/api/docs/`.
+- ProjectB Swagger: `http://localhost/warehouse/api/docs/` (through NGINX) or `http://localhost:8001/api/docs/` (direct app port for local development).
+- ProjectB API through NGINX: `http://localhost/warehouse/api/stock/` and `http://localhost/warehouse/api/report/`.
+- ProjectB health endpoint: `http://localhost:8001/api/health/`.
+- Django admin: `http://localhost/admin/` for ProjectA and `http://localhost:8001/admin/` for ProjectB.
+
+## Authentication and permissions
+
+Obtain a JWT for either API using:
 
 ```bash
+curl -X POST http://localhost:8001/api/token/ \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"YOUR_USERNAME","password":"YOUR_PASSWORD"}'
+```
+
+Send the access token in `Authorization: Bearer <access-token>`. Create an administrator independently for ProjectB:
+
+```bash
+docker compose exec projectb-web python manage.py createsuperuser
+docker compose exec projectb-web python manage.py setup_warehouse
+```
+
+The `setup_warehouse` command creates the `WarehouseManagers` group with view/add/change/delete/manage stock permissions. Assign warehouse operators to the group in ProjectB admin.
+
+ProjectA can synchronize a book (replace `BOOK_ID` with the numeric id):
+
+```bash
+curl -X POST http://localhost:8000/api/warehouse/sync/BOOK_ID/ \
+  -H 'Authorization: Bearer <ADMIN_ACCESS_TOKEN>'
+```
+
+Then read that stock record with a normal authenticated ProjectA API user:
+
+```bash
+curl http://localhost:8000/api/warehouse/books/BOOK_ID/ \
+  -H 'Authorization: Bearer <ACCESS_TOKEN>'
+```
+
+## Tests and OpenAPI validation
+
+```bash
+docker compose exec web pytest --cov=. --cov-report=term-missing --cov-fail-under=70 -q
+docker compose exec projectb-web pytest --cov=warehouse --cov=accounts --cov-report=term-missing --cov-fail-under=70 -q
+docker compose exec web python manage.py spectacular --validate
+docker compose exec projectb-web python manage.py spectacular --validate
 docker compose ps
 ```
 
-View application logs with:
+The GitHub Actions workflow at `.github/workflows/ci.yml` builds the stack, runs the checks, tests both projects with coverage thresholds, and validates both OpenAPI schemas.
+
+## Celery / Redis / logging / Sentry
 
 ```bash
-docker compose logs web
+docker compose logs -f celery celery-beat projectb-celery projectb-celery-beat
+docker compose logs -f web projectb-web nginx
+docker compose exec projectb-web python manage.py shell -c "from warehouse.tasks import generate_stock_report; print(generate_stock_report.delay().id)"
 ```
 
-View database logs with:
+Set `SENTRY_DSN` in `.env` to enable Sentry for both Django/Celery services. Leaving it empty disables external reporting while retaining console logging.
 
-```bash
-docker compose logs db
-```
+## Production deployment note
+
+On a VPS, install Docker Engine and the Compose plugin, clone the repository, configure strong unique `.env` secrets, and run `docker compose up -d --build`. Configure DNS/TLS at the edge (for example with a TLS-enabled reverse proxy) and permit public inbound traffic only to the proxy. The host-mapped ports `8000`, `8001`, and `5432` are development conveniences; remove those published ports or bind them to `127.0.0.1` before exposing the host to the internet. Never publish PostgreSQL/Redis directly. Set `DEBUG=False`, configure `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and a real Sentry DSN.

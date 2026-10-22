@@ -333,3 +333,7 @@ LOGGING = {
         },
     },
 }
+
+WAREHOUSE_API_URL = os.getenv("WAREHOUSE_API_URL", "http://projectb-web:8000/api/stock/")
+
+WAREHOUSE_SERVICE_TOKEN = os.getenv("WAREHOUSE_SERVICE_TOKEN", "")

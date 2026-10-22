@@ -13,3 +13,5 @@ htmlcov/
 !.env.example
 staticfiles/
 media/
+# ProjectB is built separately
+ProjectB/
